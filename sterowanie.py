@@ -1,11 +1,11 @@
 from datetime import datetime
 from pathlib import Path
+import csv
 
 from metoda import (
     build_tree,
     classify,
     count_nodes,
-    print_tree,
     root_attribute,
     tree_depth,
     tree_to_text,
@@ -32,8 +32,86 @@ def save_tree_to_file(tree_text, criterion, variant_name):
     folder = Path("wyniki_drzew")
     folder.mkdir(exist_ok=True)
     file_path = folder / f"drzewo_{criterion}_{variant_name}.txt"
+    return str(file_path)
+
+
+def save_results_to_csv(result, path="results.csv"):
+    # Dopisanie jednego wyniku eksperymentu do pliku CSV.
+    file_exists = Path(path).exists()
+    with open(path, "a", encoding="utf-8", newline="") as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(
+                [
+                    "criterion",
+                    "variant",
+                    "seed",
+                    "train_count",
+                    "test_count",
+                    "root",
+                    "nodes",
+                    "depth",
+                    "accuracy",
+                ]
+            )
+        writer.writerow(
+            [
+                result["criterion"],
+                result["variant"],
+                result["seed"],
+                result["train_count"],
+                result["test_count"],
+                result["root"],
+                result["nodes"],
+                result["depth"],
+                result["accuracy"],
+            ]
+        )
+
+
+def save_summary_table(results, path="tabela_wynikow.txt"):
+    # Zapis tabeli porownawczej do osobnego pliku tekstowego.
+    with open(path, "w", encoding="utf-8") as file:
+        file.write("wariant | kryterium | accuracy | korzen | wezly | glebokosc\n")
+        for result in results:
+            file.write(
+                f"{result['variant']} | {result['criterion']} | {result['accuracy']}% | "
+                f"{result['root']} | {result['nodes']} | {result['depth']}\n"
+            )
+
+
+def get_misclassified_samples(tree, test_data, target):
+    # Lista probek, dla ktorych przewidywana klasa byla bledna.
+    mistakes = []
+    for _, row in test_data.iterrows():
+        sample = row.to_dict()
+        true_class = sample.pop(target)
+        predicted = classify(tree, sample)
+        if predicted != true_class:
+            mistakes.append(
+                {
+                    "sample": sample,
+                    "expected": true_class,
+                    "predicted": predicted,
+                }
+            )
+    return mistakes
+
+
+def save_misclassified_samples(mistakes, criterion, variant_name):
+    # Zapis blednych klasyfikacji do pliku tekstowego.
+    folder = Path("bledne_klasyfikacje")
+    folder.mkdir(exist_ok=True)
+    file_path = folder / f"bledy_{criterion}_{variant_name}.txt"
     with open(file_path, "w", encoding="utf-8") as file:
-        file.write(tree_text + "\n")
+        if not mistakes:
+            file.write("Brak blednie sklasyfikowanych probek.\n")
+        else:
+            for index, mistake in enumerate(mistakes, start=1):
+                file.write(f"Probka {index}\n")
+                file.write(f"oczekiwana: {mistake['expected']}\n")
+                file.write(f"przewidziana: {mistake['predicted']}\n")
+                file.write(f"cechy: {mistake['sample']}\n\n")
     return str(file_path)
 
 
@@ -61,10 +139,28 @@ def run_single(path, criterion, variant_name):
     tree = build_tree(train_data, attributes, TARGET_COLUMN, criterion)
     result_accuracy = accuracy(tree, test_data, TARGET_COLUMN)
     tree_text = tree_to_text(tree)
-    tree_file_path = save_tree_to_file(tree_text, criterion, variant_name)
     nodes = count_nodes(tree)
     depth = tree_depth(tree)
     root = root_attribute(tree)
+    mistakes = get_misclassified_samples(tree, test_data, TARGET_COLUMN)
+    mistakes_file_path = save_misclassified_samples(mistakes, criterion, variant_name)
+
+    header = (
+        f"Kryterium: {criterion}\n"
+        f"Wariant: {variant_name}\n"
+        f"Seed: {RANDOM_SEED}\n"
+        f"Liczba atrybutow: {len(attributes)}\n"
+        f"Liczba probek treningowych: {len(train_data)}\n"
+        f"Liczba probek testowych: {len(test_data)}\n"
+        f"Accuracy: {round(result_accuracy * 100, 2)}%\n"
+        f"Korzen drzewa: {root}\n"
+        f"Liczba wezlow: {nodes}\n"
+        f"Glebokosc: {depth}\n"
+        "\nDrzewo:\n"
+    )
+    tree_file_path = save_tree_to_file(header + tree_text, criterion, variant_name)
+    with open(tree_file_path, "w", encoding="utf-8") as file:
+        file.write(header + tree_text + "\n")
 
     print()
     print("Kryterium:", criterion)
@@ -79,6 +175,7 @@ def run_single(path, criterion, variant_name):
     print("Glebokosc:", depth)
     print("Accuracy:", round(result_accuracy * 100, 2), "%")
     print("Plik drzewa:", tree_file_path)
+    print("Plik blednych klasyfikacji:", mistakes_file_path)
     print("Drzewo:")
     print(tree_text)
     print()
@@ -89,12 +186,14 @@ def run_single(path, criterion, variant_name):
         f"usuniete={removed if removed else 'brak'} | "
         f"atrybuty={attributes} | train={len(train_data)} | test={len(test_data)} | "
         f"korzen={root} | wezly={nodes} | glebokosc={depth} | "
-        f"accuracy={round(result_accuracy * 100, 2)}% | plik_drzewa={tree_file_path}"
+        f"accuracy={round(result_accuracy * 100, 2)}% | plik_drzewa={tree_file_path} | "
+        f"plik_bledow={mistakes_file_path}"
     )
     save_log(log_text)
-    return {
+    result = {
         "criterion": criterion,
         "variant": variant_name,
+        "seed": RANDOM_SEED,
         "removed": removed if removed else ["brak"],
         "attributes": attributes,
         "train_count": len(train_data),
@@ -103,7 +202,10 @@ def run_single(path, criterion, variant_name):
         "nodes": nodes,
         "depth": depth,
         "accuracy": round(result_accuracy * 100, 2),
+        "mistakes_file": mistakes_file_path,
     }
+    save_results_to_csv(result)
+    return result
 
 
 def compare_all(path):
@@ -136,6 +238,7 @@ def print_summary(results):
             f"accuracy={result['accuracy']}% | korzen={result['root']} | "
             f"wezly={result['nodes']} | glebokosc={result['depth']}"
         )
+    save_summary_table(results)
 
 
 def menu():

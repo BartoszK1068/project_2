@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 monitor.log
 wyniki_drzew/
+bledne_klasyfikacje/
+results.csv
+tabela_wynikow.txt

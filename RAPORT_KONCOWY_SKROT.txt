@@ -47,3 +47,9 @@ Uzyto stalego ziarna losowania seed = 42, aby wyniki byly powtarzalne.
 
 Program zapisuje tez zbudowane drzewa do folderu wyniki_drzew,
 co ulatwia porownanie wynikow i przygotowanie dokumentacji.
+Dodatkowo program zapisuje tabele porownawcza wynikow do pliku
+tabela_wynikow.txt, wyniki liczbowe do pliku results.csv oraz listy
+blednie sklasyfikowanych probek do folderu bledne_klasyfikacje.
+Dzieki temu mozna latwo porownac skutecznosc obu kryteriow, ocenic
+zlozonosc uzyskanych drzew oraz sprawdzic, ktore przypadki byly
+najtrudniejsze do poprawnej klasyfikacji.
