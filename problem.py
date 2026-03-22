@@ -3,6 +3,7 @@ import pandas as pd
 
 DEFAULT_DATA_PATH = "dane/road_signs.csv"
 TARGET_COLUMN = "sign_class"
+RANDOM_SEED = 42
 VARIANTS = [
     "full",
     "without_crossed_out",
@@ -36,15 +37,17 @@ def prepare_variant(data, target, variant_name):
     return new_data, attributes, removed
 
 
-def split_train_test(data, target):
-    # Prosty podzial warstwowy: czesc do treningu i czesc do testu.
+def split_train_test(data, target, train_ratio=0.7, seed=RANDOM_SEED):
+    # Stratyfikowany podzial z tasowaniem w obrebie kazdej klasy.
     train_parts = []
     test_parts = []
 
     for _, group in data.groupby(target):
-        split_index = max(1, len(group) - max(1, len(group) // 3))
-        train_parts.append(group.iloc[:split_index])
-        test_parts.append(group.iloc[split_index:])
+        shuffled_group = group.sample(frac=1, random_state=seed).reset_index(drop=True)
+        split_index = max(1, int(round(len(shuffled_group) * train_ratio)))
+        split_index = min(split_index, len(shuffled_group) - 1)
+        train_parts.append(shuffled_group.iloc[:split_index])
+        test_parts.append(shuffled_group.iloc[split_index:])
 
     train = pd.concat(train_parts).reset_index(drop=True)
     test = pd.concat(test_parts).reset_index(drop=True)

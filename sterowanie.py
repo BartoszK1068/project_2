@@ -12,6 +12,7 @@ from metoda import (
 )
 from problem import (
     DEFAULT_DATA_PATH,
+    RANDOM_SEED,
     TARGET_COLUMN,
     VARIANTS,
     load_data,
@@ -56,7 +57,7 @@ def run_single(path, criterion, variant_name):
     # Jedno uruchomienie dla wybranego kryterium i wariantu danych.
     data = load_data(path)
     data, attributes, removed = prepare_variant(data, TARGET_COLUMN, variant_name)
-    train_data, test_data = split_train_test(data, TARGET_COLUMN)
+    train_data, test_data = split_train_test(data, TARGET_COLUMN, train_ratio=0.7, seed=RANDOM_SEED)
     tree = build_tree(train_data, attributes, TARGET_COLUMN, criterion)
     result_accuracy = accuracy(tree, test_data, TARGET_COLUMN)
     tree_text = tree_to_text(tree)
@@ -68,6 +69,7 @@ def run_single(path, criterion, variant_name):
     print()
     print("Kryterium:", criterion)
     print("Wariant:", variant_name)
+    print("Seed:", RANDOM_SEED)
     print("Usuniete atrybuty:", removed if removed else "brak")
     print("Uzyte atrybuty:", attributes)
     print("Liczba probek treningowych:", len(train_data))
@@ -83,6 +85,7 @@ def run_single(path, criterion, variant_name):
 
     log_text = (
         f"{datetime.now()} | kryterium={criterion} | wariant={variant_name} | "
+        f"seed={RANDOM_SEED} | "
         f"usuniete={removed if removed else 'brak'} | "
         f"atrybuty={attributes} | train={len(train_data)} | test={len(test_data)} | "
         f"korzen={root} | wezly={nodes} | glebokosc={depth} | "

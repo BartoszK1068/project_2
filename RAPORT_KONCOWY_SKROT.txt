@@ -39,5 +39,11 @@ Poprawnosc programu byla sprawdzana przez:
 - porownanie wynikow dla niepelnych zestawow atrybutow,
 - zapis przebiegu wykonania do pliku monitor.log.
 
+Aby ograniczyc wplyw kolejnosci rekordow w zbiorze danych,
+zastosowano losowe tasowanie probek przed podzialem na zbior
+uczacy i testowy. Tasowanie wykonywane jest osobno w obrebie
+kazdej klasy, dzieki czemu zachowany jest warstwowy podzial danych.
+Uzyto stalego ziarna losowania seed = 42, aby wyniki byly powtarzalne.
+
 Program zapisuje tez zbudowane drzewa do folderu wyniki_drzew,
 co ulatwia porownanie wynikow i przygotowanie dokumentacji.
