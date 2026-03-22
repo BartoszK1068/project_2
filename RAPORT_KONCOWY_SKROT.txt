@@ -1,0 +1,43 @@
+Raport koncowy - Projekt U3
+
+Temat:
+Budowa drzewa decyzyjnego dla identyfikacji znakow drogowych
+z wykorzystaniem kryteriow InfoGain oraz GainRatio.
+
+1. Struktura programu
+Program zostal podzielony na trzy moduly:
+- metoda.py - zawiera uniwersalna implementacje algorytmu drzewa decyzyjnego,
+- problem.py - zawiera reprezentacje problemu znakow drogowych i przygotowanie danych,
+- sterowanie.py - zawiera menu tekstowe, uruchamianie eksperymentow i zapis do logu.
+
+Dodatkowo plik main.py stanowi punkt wejscia do programu.
+
+2. Sposob uruchomienia
+Program uruchamia sie poleceniem:
+python main.py
+
+Po uruchomieniu pojawia sie menu tekstowe, w ktorym mozna:
+- ustawic sciezke do pliku z danymi,
+- uruchomic budowe drzewa dla jednego kryterium,
+- porownac oba kryteria dla wszystkich wariantow danych.
+
+3. Dane i warianty
+Dane sa zapisane w pliku dane/road_signs.csv.
+Kazdy rekord opisuje znak drogowy przez jego cechy:
+ksztalt, kolor tla, kolor obramowania, kolor symbolu,
+liczbe elementow, informacje o przekresleniu oraz klase znaku.
+W zbiorze uwzgledniono klasy: warning, prohibition,
+mandatory, information, priority oraz service.
+
+Program obsluguje wariant pelny oraz warianty z brakujacymi atrybutami,
+co pozwala zasymulowac niepelne obserwacje.
+
+4. Weryfikacja dzialania
+Poprawnosc programu byla sprawdzana przez:
+- obserwacje budowanych drzew,
+- porownanie drzew dla roznych kryteriow,
+- porownanie wynikow dla niepelnych zestawow atrybutow,
+- zapis przebiegu wykonania do pliku monitor.log.
+
+Program zapisuje tez zbudowane drzewa do folderu wyniki_drzew,
+co ulatwia porownanie wynikow i przygotowanie dokumentacji.
