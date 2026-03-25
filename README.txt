@@ -2,7 +2,7 @@ Projekt U3
 
 Budowa drzewa decyzyjnego dla identyfikacji znaków drogowych
 
-Projekt został wykonany w ramach przedmiotu Metody Sztucznej Inteligencji.
+
 Celem programu jest budowa drzewa decyzyjnego służącego do klasyfikacji znaków drogowych na podstawie ich cech, takich jak kształt, kolor tła, kolor obramowania, kolor symbolu, liczba elementów oraz informacja o przekreśleniu.
 
 W projekcie zaimplementowano dwa kryteria wyboru najlepszego atrybutu:
